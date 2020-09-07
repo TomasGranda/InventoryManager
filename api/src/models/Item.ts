@@ -5,7 +5,7 @@ export interface Item {
   amount: number;
 }
 
-interface ItemDocument extends Item, Document {}
+export interface ItemDocument extends Item, Document {}
 
 export const itemSchema = new Schema<Item>({
   name: {

@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { itemPath } from './src/config/consts';
 
 const app = express();
+app.use(express.json());
 dotenv.config();
 
 if (!process.env.MONGO_URI) {

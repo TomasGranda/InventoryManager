@@ -1,4 +1,4 @@
-import { Item, ItemModel } from '../models/Item';
+import { Item, ItemModel, ItemDocument } from '../models/Item';
 import { Router, Request } from 'express';
 import { itemIdParam } from '../config/consts';
 import {
@@ -38,11 +38,11 @@ itemsRouter.get(`/:${itemIdParam}`, async (req, res) => {
     return;
   }
 
-  res.send(item);
+  res.send(new OkResponse(item));
 });
 
 itemsRouter.post('/save', async (req: Request<never, unknown, Item>, res) => {
-	const newItem = req.body;
+  const newItem = req.body;
   const itemModel = new ItemModel(newItem);
 
   try {
@@ -66,5 +66,70 @@ itemsRouter.post('/save', async (req: Request<never, unknown, Item>, res) => {
 
   res.send(new OkResponse<Item>(createdItem));
 });
+
+itemsRouter.put(
+  `/rename/:${itemIdParam}`,
+  async (req: Request<never, unknown, Item>, res) => {
+    const newItemName = req.body.name;
+    const itemId = req.params[itemIdParam];
+
+    let item: ItemDocument;
+    try {
+      item = await ItemModel.findById(itemId);
+      item.name = newItemName;
+    } catch (err) {
+      //TODO catch errors
+      res.send(
+        new InternalServerErrorResponse<unknown>(err, 'not catched error'),
+      );
+      return;
+    }
+
+    try {
+      item.save();
+    } catch (err) {
+      //TODO catch errors
+      res.send(
+        new InternalServerErrorResponse<unknown>(err, 'not catched error'),
+      );
+      return;
+    }
+
+    res.send(new OkResponse<Item>(item));
+  },
+);
+
+itemsRouter.put(
+  `/setamount/:${itemIdParam}`,
+  async (req: Request<never, unknown, Item>, res) => {
+    const newItemAmount = req.body.amount;
+    const itemId = req.params[itemIdParam];
+
+    let item: ItemDocument;
+    try {
+      item = await ItemModel.findById(itemId);
+      item.amount = newItemAmount;
+      await item.validate();
+    } catch (err) {
+      //TODO catch errors
+      res.send(
+        new InternalServerErrorResponse<unknown>(err, 'not catched error'),
+      );
+      return;
+    }
+
+    try {
+      item.save();
+    } catch (err) {
+      //TODO catch errors
+      res.send(
+        new InternalServerErrorResponse<unknown>(err, 'not catched error'),
+      );
+      return;
+    }
+
+    res.send(new OkResponse<Item>(item));
+  },
+);
 
 export default itemsRouter;
