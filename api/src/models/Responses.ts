@@ -14,9 +14,9 @@ export class BadRequestRespose<ErrorType> {
   message: string;
   error: ErrorType;
 
-  constructor(error: ErrorType, errorMessage: string) {
-    this.error = error;
+  constructor(errorMessage: string, error?: ErrorType) {
     this.message = errorMessage;
+    this.error = error ?? null;
   }
 }
 

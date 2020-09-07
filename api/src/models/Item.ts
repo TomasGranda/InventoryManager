@@ -1,16 +1,17 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, DocumentQuery } from 'mongoose';
+import { itemTypeSchema, ItemType, ItemTypeDocument } from './ItemType';
 
 export interface Item {
-  name: string;
+  itemTypeId?: string;
+  itemType?: DocumentQuery<ItemTypeDocument, ItemTypeDocument, unknown>;
   amount: number;
 }
 
 export interface ItemDocument extends Item, Document {}
 
 export const itemSchema = new Schema<Item>({
-  name: {
-    type: String,
-    minlength: 1,
+  itemType: {
+    type: itemTypeSchema,
     required: true,
   },
   amount: {

@@ -6,6 +6,7 @@ import {
   BadRequestRespose,
   OkResponse,
 } from '../models/Responses';
+import { ItemTypeModel } from '../models/ItemType';
 
 const itemsRouter = Router();
 
@@ -42,7 +43,28 @@ itemsRouter.get(`/:${itemIdParam}`, async (req, res) => {
 });
 
 itemsRouter.post('/save', async (req: Request<never, unknown, Item>, res) => {
-  const newItem = req.body;
+  const itemTypeId = req.body.itemTypeId;
+
+  if (!itemTypeId) {
+    res.send(new BadRequestRespose('itemId is required'));
+  }
+
+  let itemType;
+  try {
+    itemType = await ItemTypeModel.findById(itemTypeId);
+  } catch (err) {
+    //TODO catch errors
+    res.send(
+      new InternalServerErrorResponse<unknown>(err, 'not catched error'),
+    );
+    return;
+  }
+
+  const newItem: Item = {
+    itemType: itemType,
+    amount: req.body.amount,
+  };
+
   const itemModel = new ItemModel(newItem);
 
   try {
@@ -66,38 +88,6 @@ itemsRouter.post('/save', async (req: Request<never, unknown, Item>, res) => {
 
   res.send(new OkResponse<Item>(createdItem));
 });
-
-itemsRouter.put(
-  `/rename/:${itemIdParam}`,
-  async (req: Request<never, unknown, Item>, res) => {
-    const newItemName = req.body.name;
-    const itemId = req.params[itemIdParam];
-
-    let item: ItemDocument;
-    try {
-      item = await ItemModel.findById(itemId);
-      item.name = newItemName;
-    } catch (err) {
-      //TODO catch errors
-      res.send(
-        new InternalServerErrorResponse<unknown>(err, 'not catched error'),
-      );
-      return;
-    }
-
-    try {
-      item.save();
-    } catch (err) {
-      //TODO catch errors
-      res.send(
-        new InternalServerErrorResponse<unknown>(err, 'not catched error'),
-      );
-      return;
-    }
-
-    res.send(new OkResponse<Item>(item));
-  },
-);
 
 itemsRouter.put(
   `/setamount/:${itemIdParam}`,
